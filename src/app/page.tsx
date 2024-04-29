@@ -29,7 +29,7 @@ const Page: React.FC = () => {
       <div className="menu-icon">
         <FaBars size="24" /> 
       </div>
-        <img src="/path/to/logo.png" alt="Startup" className=" w-12 h-8" />
+        <img src="#" alt="Startup" className=" w-12 h-8" />
       </div>
 
       {/* Main Content */}
