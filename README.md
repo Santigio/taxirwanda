@@ -20,13 +20,13 @@ To get the project up and running on your local machine, follow these steps:
 
     bash
 
-git clone https://yourrepositorylink.com
+git clone [https://yourrepositorylink.com](https://github.com/Santigio/taxirwanda)
 
 Navigate to the project directory:
 
 bash
 
-cd path-to-project
+cd cd taxirwanda
 
 Install dependencies:
 
