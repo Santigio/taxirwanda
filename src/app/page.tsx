@@ -12,7 +12,7 @@ interface Stop {
 
 const Page: React.FC = () => {
   const stops: Stop[] = [
-    // { lat: -1.939826787816454, lng: 30.0445426438232, name: 'Nyabugogo' },
+    { lat: -1.939826787816454, lng: 30.0445426438232, name: 'Nyabugogo' },
     { lat: -1.9355377074007851, lng: 30.060163829002217, name: 'Stop A' },
     { lat: -1.9358808342336546, lng: 30.08024820994666, name: 'Stop B' },
     { lat: -1.9489196023037583, lng: 30.092607828989397, name: 'Stop C' },
