@@ -53,6 +53,7 @@ bash
     yarn start
 
 The application should now be running and accessible at http://localhost:3000.
+
 Features
 
     Real-Time Geolocation: Tracks the user's current location and updates their position on the map as they move.
