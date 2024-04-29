@@ -5,9 +5,9 @@ import { GoogleMap, LoadScript, Marker, DirectionsRenderer } from '@react-google
 
 const Map = ({ stops }) => {
   const [currentLocation, setCurrentLocation] = useState(null);
-  const [nextStopIndex, setNextStopIndex] = useState(0);
   const [eta, setEta] = useState(null);
-  const [isMapsLoaded, setIsMapsLoaded] = useState(false); 
+  const [isMapsLoaded, setIsMapsLoaded] = useState(false);
+  const [directions, setDirections] = useState(null);
 
   const mapStyles = {
     height: 'calc(100vh - 200px)',
@@ -34,45 +34,73 @@ const Map = ({ stops }) => {
   }, []);
 
   useEffect(() => {
-    if (currentLocation && stops.length > 1 && window.google) {
-      // Ensure Google Maps API is loaded
-      const nextStop = stops[nextStopIndex];
-      const origin = new window.google.maps.LatLng(currentLocation.lat, currentLocation.lng);
-      const destination = new window.google.maps.LatLng(nextStop.lat, nextStop.lng);
-      const distance = window.google.maps.geometry.spherical.computeDistanceBetween(origin, destination);
-      const averageSpeed = 50; // km/h
-      const timeInHours = distance / averageSpeed / 1000;
-      const etaInSeconds = timeInHours * 3600;
-      setEta(Math.ceil(etaInSeconds / 60));
+    if (directions) {
+      let totalDuration = 0;
+      directions.routes[0].legs.forEach(leg => {
+        totalDuration += leg.duration.value;
+      });
+      const etaMinutes = Math.round(totalDuration / 60);
+      setEta(etaMinutes);
     }
-  }, [currentLocation, stops, nextStopIndex, isMapsLoaded]);
+  }, [directions]);
+  
+
+  useEffect(() => {
+    if (currentLocation && stops.length > 1 && window.google) {
+      const origin = new window.google.maps.LatLng(currentLocation.lat, currentLocation.lng);
+      const destination = new window.google.maps.LatLng(stops[stops.length - 2].lat, stops[stops.length - 2].lng);
+      const waypoints = stops.slice(0, -1).map(stop => ({
+        location: { lat: stop.lat, lng: stop.lng },
+        stopover: true
+      }));
+  
+      const directionsService = new window.google.maps.DirectionsService();
+  
+      directionsService.route(
+        {
+          origin: origin,
+          destination: destination,
+          waypoints: waypoints,
+          optimizeWaypoints: true,
+          travelMode: window.google.maps.TravelMode.DRIVING
+        },
+        (result, status) => {
+          if (status === window.google.maps.DirectionsStatus.OK) {
+            setDirections(result);
+          } else {
+            console.error(`Error fetching directions: ${status}`);
+          }
+        }
+      );
+    }
+  }, [currentLocation, stops, isMapsLoaded]);
+  
 
   return (
     <div className="relative">
       <LoadScript
         googleMapsApiKey="AIzaSyASH4t1QN35rcA2FIGnZ4jxZKnJvKrtWxY"
-        libraries={["geometry"]} // Load the geometry library
+        libraries={["geometry"]}
         onLoad={() => setIsMapsLoaded(true)}
       >
-
         <GoogleMap
-          mapContainerStyle={mapStyles}
-          zoom={12}
-          center={defaultCenter}
-        >
-          {stops.map((stop, index) => (
-            <Marker key={index} position={{ lat: stop.lat, lng: stop.lng }} />
-          ))}
-          {currentLocation && <Marker position={{ lat: currentLocation.lat, lng: currentLocation.lng }} />}
-        </GoogleMap>
+  mapContainerStyle={mapStyles}
+  zoom={12}
+  center={defaultCenter}
+>
+  {stops.slice(0, -1).map((stop, index) => (
+    <Marker key={index} position={{ lat: stop.lat, lng: stop.lng }} />
+  ))}
+  {currentLocation && <Marker position={{ lat: currentLocation.lat, lng: currentLocation.lng }} />}
+  {directions && <DirectionsRenderer directions={directions} options={{ polylineOptions: { strokeColor: 'green' } }} />}
+</GoogleMap>
+
       </LoadScript>
       <div className="absolute bottom-0 left-0 w-full bg-white p-4">
-        {/* Banner with details */}
-        <p className="text-black text-lg font-bold">Nyabugogo - Kimironko</p>
-        <p className='text-black'>Next Stop: {stops[nextStopIndex]?.name}</p>
+        <p className="text-black text-lg font-bold">{stops[0].name} - {stops[stops.length - 1].name}</p>
+        <p className='text-black'>Next Stop: {stops[1]?.name}</p>
         {eta && <p className='text-black'>ETA: {eta} mins</p>}
       </div>
-      
     </div>
   );
 };
